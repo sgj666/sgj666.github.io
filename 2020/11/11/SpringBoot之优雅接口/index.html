@@ -572,7 +572,7 @@ return &quot;success&quot;;
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>再来看一下接口的响应数据：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaUQNsiaVnqP4UTPPsNvPhED4QMnQUp0YINZEqHGn5PUHkwK3WH22pWeFg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/3OChgXl2S19ZaIY.png"></p>
 <p>这样是不是方便很多？不难看出使用 Validator 校验有如下几个好处：</p>
 <ol>
 <li>简化代码，之前业务层那么一大段校验代码都被省略掉了；</li>
@@ -587,9 +587,9 @@ return userService.addUser(user);
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>去掉之后会发生什么事情呢？直接来试验一下，还是按照之前一样故意传递一个不符合校验规则的参数给接口。此时我们观察控制台可以发现接口已经引发 MethodArgumentNotValidException 异常了：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaUnnaEMBxGIsWQ9iaiba5MFWP6mCHGicFwP5qBpVJugLh9wRa3dDHK0H0TA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/K7YWukTCfDMpGNj.png"></p>
 <p>其实这样就已经达到我们想要的效果了，参数校验不通过自然就不执行接下来的业务逻辑，去掉 BindingResult 后会自动引发异常，异常发生了自然而然就不会执行业务逻辑。也就是说，我们完全没必要添加相关 BindingResult 相关操作嘛。不过事情还没有完，异常是引发了，可我们并没有编写返回错误信息的代码呀，那参数校验失败了会响应什么数据给前端呢？我们来看一下刚才异常发生后接口响应的数据：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaUicotw2fDqPmxGousGsEyZwRnDvyVye1zgicTW1ibiajZgxUMPQ9z23yA3Q/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/ugn7VZ3FdG2ti14.png"></p>
 <p>没错，是直接将整个错误对象相关信息都响应给前端了！这样就很难受，不过解决这个问题也很简单，就是我们接下来要讲的全局异常处理！</p>
 <h1 id="四、全局异常处理"><a href="#四、全局异常处理" class="headerlink" title="四、全局异常处理"></a><strong>四、全局异常处理</strong></h1><p>参数校验失败会自动引发异常，我们当然不可能再去手动捕捉异常进行处理，不然还不如用之前 BindingResult 方式呢。又不想手动捕捉这个异常，又要对这个异常进行处理，那正好使用 SpringBoot 全局异常处理来达到一劳永逸的效果！</p>
 <h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a><strong>基本使用</strong></h2><p>首先，我们需要新建一个类，在这个类上加上 @ControllerAdvice 或 @RestControllerAdvice 注解，这个类就配置成全局处理类了（这个根据你的 Controller 层用的是 @Controller 还是 @RestController 来决定）。</p>
@@ -606,7 +606,7 @@ return objectError.getDefaultMessage();
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>我们再来看下这次校验失败后的响应数据：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaUQNsiaVnqP4UTPPsNvPhED4QMnQUp0YINZEqHGn5PUHkwK3WH22pWeFg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/6RTghao4wDvY21m.png"></p>
 <p>没错，这次返回的就是我们制定的错误提示信息！我们通过全局异常处理优雅的实现了我们想要的功能！以后我们再想写接口参数校验，就只需要在入参的成员变量上加上 Validator 校验规则注解，然后在参数上加上 @Valid 注解即可完成校验，校验失败会自动返回错误提示信息，无需任何其他代码！</p>
 <h2 id="自定义异常"><a href="#自定义异常" class="headerlink" title="自定义异常"></a><strong>自定义异常</strong></h2><p>全局处理当然不会只能处理一种异常，用途也不仅仅是对一个参数校验方式进行优化。在实际开发中，如何对异常处理其实是一个很麻烦的事情。传统处理异常一般有以下烦恼：</p>
 <ol>
@@ -687,7 +687,7 @@ return new ResultVO&lt;&gt;(1001, &quot;参数校验失败&quot;, objectError.ge
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>我们再来看一下此时如果发生异常了会响应什么数据给前端：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaULS2ibshpX4MYdJGT0p6Pna0EqC9aAUVxdibyaTK541ia6ScKaicSqyc8IA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/OvyUQrq2pwlFsX3.png"></p>
 <p>OK，这个异常信息响应就非常好了，状态码和响应说明还有错误提示数据都返给了前端，并且是所有异常都会返回相同的格式！异常这里搞定了，别忘了我们到接口那也要修改返回类型，我们新增一个接口好来看看效果：</p>
 <pre class="line-numbers language-java" data-language="java"><code class="language-java">@GetMapping(&quot;&#x2F;getUser&quot;)
 public ResultVO&lt;User&gt; getUser() &#123;
@@ -700,7 +700,7 @@ return new ResultVO&lt;&gt;(user);
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>看一下如果响应正确返回的是什么效果：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaUEh7KwukiaAdx8phrjYgVxicic1Tkwpd7USibBiaBQicAgnhdU24VBvHicoSZg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/Vq5Gk7IlKRFEPOX.png"></p>
 <p>这样无论是正确响应还是发生异常，响应数据的格式都是统一的，十分规范！</p>
 <p>数据格式是规范了，不过响应码 code 和响应信息 msg 还没有规范呀！大家发现没有，无论是正确响应，还是异常响应，响应码和响应信息是想怎么设置就怎么设置，要是10个开发人员对同一个类型的响应写10个不同的响应码，那这个统一响应体的格式规范就毫无意义！所以，必须要将响应码和响应信息给规范起来。</p>
 <h2 id="响应码枚举"><a href="#响应码枚举" class="headerlink" title="响应码枚举"></a><strong>响应码枚举</strong></h2><p>要规范响应体中的响应码和响应信息用枚举简直再恰当不过了，我们现在就来创建一个响应码枚举类：</p>
@@ -784,7 +784,7 @@ return user;
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>然后我们来看下响应数据：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/eZzl4LXykQwVWfyTgIcsqY6CYia8frniaUEh7KwukiaAdx8phrjYgVxicic1Tkwpd7USibBiaBQicAgnhdU24VBvHicoSZg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="img"></p>
+<p><img src="https://i.loli.net/2020/11/11/r9CmdanqvRoUsfY.png"></p>
 <p>成功对数据进行了包装！</p>
 <p><strong>注意</strong>：beforeBodyWrite 方法里包装数据无法对 String 类型的数据直接进行强转，所以要进行特殊处理，这里不讲过多的细节，有兴趣可以自行深入了解。</p>
 <h1 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a><strong>六、总结</strong></h1><p>自此整个后端接口基本体系就构建完毕了。</p>
